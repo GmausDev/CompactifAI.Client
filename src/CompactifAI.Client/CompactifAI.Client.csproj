@@ -8,14 +8,14 @@
 
     <!-- NuGet Package Properties -->
     <PackageId>CompactifAI.Client</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Your Name</Authors>
-    <Company>Your Company</Company>
+    <Version>1.0.1</Version>
+    <Authors>GmausDev</Authors>
+    <Company>GmausDev</Company>
     <Description>A .NET client library for the CompactifAI API. Easily integrate AI chat completions, text completions, and audio transcription into your .NET applications.</Description>
     <PackageTags>compactifai;ai;llm;chat;completions;transcription;openai-compatible</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://docs.compactif.ai</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/yourusername/CompactifAI.Client</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/GmausDev/CompactifAI.Client</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GmausDev/CompactifAI.Client</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
 
     <!-- Package generation -->
