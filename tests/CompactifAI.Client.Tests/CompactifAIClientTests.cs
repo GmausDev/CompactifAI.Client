@@ -279,7 +279,7 @@ public class CompactifAIClientTests
         {
             Id = CompactifAIModels.DeepSeekR1_Slim,
             OwnedBy = "compactifai",
-            ParametersNumber = 70000000000
+            ParametersNumber = "70B"
         };
 
         _mockHttp.When(HttpMethod.Get, $"https://api.compactif.ai/v1/models/{CompactifAIModels.DeepSeekR1_Slim}")
@@ -290,7 +290,7 @@ public class CompactifAIClientTests
 
         // Assert
         Assert.Equal(CompactifAIModels.DeepSeekR1_Slim, result.Id);
-        Assert.Equal(70000000000, result.ParametersNumber);
+        Assert.Equal("70B", result.ParametersNumber);
     }
 
     #endregion

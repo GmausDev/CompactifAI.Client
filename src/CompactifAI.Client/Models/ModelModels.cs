@@ -50,10 +50,10 @@ public class ModelInfo
     public string OwnedBy { get; set; } = string.Empty;
 
     /// <summary>
-    /// The number of parameters in the model.
+    /// The number of parameters in the model (e.g., "8B", "70B").
     /// </summary>
     [JsonPropertyName("parameters_number")]
-    public long? ParametersNumber { get; set; }
+    public string? ParametersNumber { get; set; }
 
     /// <summary>
     /// The capabilities of the model.

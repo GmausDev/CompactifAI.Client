@@ -259,7 +259,7 @@ public class ModelsTests
                     "object": "model",
                     "created": 1234567890,
                     "owned_by": "compactifai",
-                    "parameters_number": 8000000000,
+                    "parameters_number": "8B",
                     "capabilities": {
                         "chat": true,
                         "completion": true,
@@ -276,9 +276,73 @@ public class ModelsTests
         Assert.Equal("list", response.Object);
         Assert.Single(response.Data);
         Assert.Equal("cai-llama-3-1-8b-slim", response.Data[0].Id);
-        Assert.Equal(8000000000, response.Data[0].ParametersNumber);
+        Assert.Equal("8B", response.Data[0].ParametersNumber);
         Assert.True(response.Data[0].Capabilities?.Chat);
         Assert.False(response.Data[0].Capabilities?.Transcription);
+    }
+
+    [Theory]
+    [InlineData("\"8B\"", "8B")]
+    [InlineData("\"70B\"", "70B")]
+    [InlineData("\"1.5B\"", "1.5B")]
+    [InlineData("\"8000000000\"", "8000000000")]
+    [InlineData("null", null)]
+    public void ModelsResponse_ParametersNumber_HandlesVariousFormats(string parametersValue, string? expected)
+    {
+        var json = $$"""
+        {
+            "object": "list",
+            "data": [
+                {
+                    "id": "test-model",
+                    "object": "model",
+                    "created": 1234567890,
+                    "owned_by": "compactifai",
+                    "parameters_number": {{parametersValue}},
+                    "capabilities": {
+                        "chat": true,
+                        "completion": false,
+                        "transcription": false
+                    }
+                }
+            ]
+        }
+        """;
+
+        var response = JsonSerializer.Deserialize<ModelsResponse>(json, _jsonOptions);
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Equal(expected, response.Data[0].ParametersNumber);
+    }
+
+    [Fact]
+    public void ModelsResponse_Deserializes_WithMissingParametersNumber()
+    {
+        var json = """
+        {
+            "object": "list",
+            "data": [
+                {
+                    "id": "test-model",
+                    "object": "model",
+                    "created": 1234567890,
+                    "owned_by": "compactifai",
+                    "capabilities": {
+                        "chat": true,
+                        "completion": false,
+                        "transcription": false
+                    }
+                }
+            ]
+        }
+        """;
+
+        var response = JsonSerializer.Deserialize<ModelsResponse>(json, _jsonOptions);
+
+        Assert.NotNull(response);
+        Assert.Single(response.Data);
+        Assert.Null(response.Data[0].ParametersNumber);
     }
 
     #endregion
