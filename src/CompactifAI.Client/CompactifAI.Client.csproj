@@ -8,7 +8,7 @@
 
     <!-- NuGet Package Properties -->
     <PackageId>CompactifAI.Client</PackageId>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <Authors>GmausDev</Authors>
     <Company>GmausDev</Company>
     <Description>A .NET client library for the CompactifAI API. Easily integrate AI chat completions, text completions, and audio transcription into your .NET applications.</Description>
