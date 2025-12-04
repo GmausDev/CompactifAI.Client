@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace CompactifAI.Client.Models;
@@ -150,7 +151,7 @@ public class ToolFunction
     /// </summary>
     [JsonPropertyName("parameters")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? Parameters { get; set; }
+    public JsonElement? Parameters { get; set; }
 }
 
 /// <summary>
