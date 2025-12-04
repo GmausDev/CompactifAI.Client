@@ -1,7 +1,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using CompactifAI.Client.Models;
+using CompactifAI.Client.Serialization;
 using Microsoft.Extensions.Options;
 
 namespace CompactifAI.Client;
@@ -13,7 +15,6 @@ public class CompactifAIClient : ICompactifAIClient
 {
     private readonly HttpClient _httpClient;
     private readonly CompactifAIOptions _options;
-    private readonly JsonSerializerOptions _jsonOptions;
 
     /// <summary>
     /// Creates a new CompactifAI client.
@@ -24,12 +25,6 @@ public class CompactifAIClient : ICompactifAIClient
     {
         _httpClient = httpClient;
         _options = options.Value;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
-
         ConfigureHttpClient();
     }
 
@@ -46,12 +41,6 @@ public class CompactifAIClient : ICompactifAIClient
             BaseUrl = baseUrl ?? "https://api.compactif.ai/v1"
         };
         _httpClient = new HttpClient();
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
-
         ConfigureHttpClient();
     }
 
@@ -76,10 +65,10 @@ public class CompactifAIClient : ICompactifAIClient
         var response = await _httpClient.PostAsJsonAsync(
             "chat/completions",
             request,
-            _jsonOptions,
+            CompactifAIJsonContext.Default.ChatCompletionRequest,
             cancellationToken);
 
-        return await HandleResponseAsync<ChatCompletionResponse>(response, cancellationToken);
+        return await HandleResponseAsync(response, CompactifAIJsonContext.Default.ChatCompletionResponse, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -120,10 +109,10 @@ public class CompactifAIClient : ICompactifAIClient
         var response = await _httpClient.PostAsJsonAsync(
             "completions",
             request,
-            _jsonOptions,
+            CompactifAIJsonContext.Default.CompletionRequest,
             cancellationToken);
 
-        return await HandleResponseAsync<CompletionResponse>(response, cancellationToken);
+        return await HandleResponseAsync(response, CompactifAIJsonContext.Default.CompletionResponse, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -176,7 +165,7 @@ public class CompactifAIClient : ICompactifAIClient
 
         var response = await _httpClient.PostAsync("audio/transcriptions", content, cancellationToken);
 
-        return await HandleResponseAsync<TranscriptionResponse>(response, cancellationToken);
+        return await HandleResponseAsync(response, CompactifAIJsonContext.Default.TranscriptionResponse, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -209,7 +198,7 @@ public class CompactifAIClient : ICompactifAIClient
     {
         var response = await _httpClient.GetAsync("models", cancellationToken);
 
-        return await HandleResponseAsync<ModelsResponse>(response, cancellationToken);
+        return await HandleResponseAsync(response, CompactifAIJsonContext.Default.ModelsResponse, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -217,7 +206,7 @@ public class CompactifAIClient : ICompactifAIClient
     {
         var response = await _httpClient.GetAsync($"models/{modelId}", cancellationToken);
 
-        return await HandleResponseAsync<ModelInfo>(response, cancellationToken);
+        return await HandleResponseAsync(response, CompactifAIJsonContext.Default.ModelInfo, cancellationToken);
     }
 
     #endregion
@@ -226,6 +215,7 @@ public class CompactifAIClient : ICompactifAIClient
 
     private async Task<T> HandleResponseAsync<T>(
         HttpResponseMessage response,
+        JsonTypeInfo<T> jsonTypeInfo,
         CancellationToken cancellationToken)
     {
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -238,7 +228,7 @@ public class CompactifAIClient : ICompactifAIClient
                 responseBody);
         }
 
-        var result = JsonSerializer.Deserialize<T>(responseBody, _jsonOptions);
+        var result = JsonSerializer.Deserialize(responseBody, jsonTypeInfo);
 
         if (result is null)
         {

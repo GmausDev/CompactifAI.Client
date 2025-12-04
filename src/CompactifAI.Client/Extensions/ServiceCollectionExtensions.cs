@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -49,6 +50,12 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     /// <param name="configuration">The configuration section to bind from.</param>
     /// <returns>The service collection for chaining.</returns>
+    /// <remarks>
+    /// This method uses configuration binding which requires reflection and is not AOT-compatible.
+    /// For AOT scenarios, use the overload that accepts an Action&lt;CompactifAIOptions&gt;.
+    /// </remarks>
+    [RequiresUnreferencedCode("Configuration binding uses reflection. Use the Action<CompactifAIOptions> overload for AOT scenarios.")]
+    [RequiresDynamicCode("Configuration binding uses reflection. Use the Action<CompactifAIOptions> overload for AOT scenarios.")]
     public static IServiceCollection AddCompactifAI(
         this IServiceCollection services,
         Microsoft.Extensions.Configuration.IConfiguration configuration)

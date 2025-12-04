@@ -1,15 +1,14 @@
 using System.Text.Json;
 using CompactifAI.Client.Models;
+using CompactifAI.Client.Serialization;
 using Xunit;
 
 namespace CompactifAI.Client.Tests;
 
 public class ModelsTests
 {
-    private readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-    };
+    // Use source-generated context for high-performance serialization
+    private static CompactifAIJsonContext JsonContext => CompactifAIJsonContext.Default;
 
     #region ChatMessage Tests
 
@@ -56,7 +55,7 @@ public class ModelsTests
             }
         };
 
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
+        var json = JsonSerializer.Serialize(request, JsonContext.ChatCompletionRequest);
 
         Assert.Contains("\"model\":\"test-model\"", json);
         Assert.Contains("\"messages\":", json);
@@ -73,7 +72,7 @@ public class ModelsTests
             Messages = new List<ChatMessage> { ChatMessage.User("Test") }
         };
 
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
+        var json = JsonSerializer.Serialize(request, JsonContext.ChatCompletionRequest);
 
         Assert.DoesNotContain("temperature", json);
         Assert.DoesNotContain("max_tokens", json);
@@ -93,7 +92,7 @@ public class ModelsTests
             FrequencyPenalty = 0.5
         };
 
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
+        var json = JsonSerializer.Serialize(request, JsonContext.ChatCompletionRequest);
 
         Assert.Contains("\"temperature\":0.7", json);
         Assert.Contains("\"max_tokens\":100", json);
@@ -132,7 +131,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<ChatCompletionResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.ChatCompletionResponse);
 
         Assert.NotNull(response);
         Assert.Equal("chatcmpl-123", response.Id);
@@ -161,7 +160,7 @@ public class ModelsTests
             TopP = 0.95
         };
 
-        var json = JsonSerializer.Serialize(request, _jsonOptions);
+        var json = JsonSerializer.Serialize(request, JsonContext.CompletionRequest);
 
         Assert.Contains("\"model\":\"test-model\"", json);
         Assert.Contains("\"prompt\":\"Once upon a time\"", json);
@@ -198,7 +197,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<CompletionResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.CompletionResponse);
 
         Assert.NotNull(response);
         Assert.Equal("cmpl-123", response.Id);
@@ -230,7 +229,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<TranscriptionResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.TranscriptionResponse);
 
         Assert.NotNull(response);
         Assert.Equal("transcribe", response.Task);
@@ -270,7 +269,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<ModelsResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.ModelsResponse);
 
         Assert.NotNull(response);
         Assert.Equal("list", response.Object);
@@ -309,7 +308,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<ModelsResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.ModelsResponse);
 
         Assert.NotNull(response);
         Assert.Single(response.Data);
@@ -338,7 +337,7 @@ public class ModelsTests
         }
         """;
 
-        var response = JsonSerializer.Deserialize<ModelsResponse>(json, _jsonOptions);
+        var response = JsonSerializer.Deserialize(json, JsonContext.ModelsResponse);
 
         Assert.NotNull(response);
         Assert.Single(response.Data);
@@ -352,6 +351,9 @@ public class ModelsTests
     [Fact]
     public void Tool_Serializes_Correctly()
     {
+        // Create JsonElement from anonymous object for parameters
+        var parametersJson = JsonSerializer.SerializeToElement(new { type = "object", properties = new { location = new { type = "string" } } });
+
         var tool = new Tool
         {
             Type = "function",
@@ -359,11 +361,11 @@ public class ModelsTests
             {
                 Name = "get_weather",
                 Description = "Get the current weather",
-                Parameters = new { type = "object", properties = new { location = new { type = "string" } } }
+                Parameters = parametersJson
             }
         };
 
-        var json = JsonSerializer.Serialize(tool, _jsonOptions);
+        var json = JsonSerializer.Serialize(tool, JsonContext.Tool);
 
         Assert.Contains("\"type\":\"function\"", json);
         Assert.Contains("\"name\":\"get_weather\"", json);
