@@ -2,12 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, release/net8, release/net9 ]
   pull_request:
-    branches: [ main, master, develop ]
-
-env:
-  DOTNET_VERSION: '8.0.x'
+    branches: [ main, release/net8, release/net9 ]
 
 jobs:
   build:
@@ -17,10 +14,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Detect .NET version from branch
+      id: dotnet-version
+      run: |
+        if [[ "${{ github.ref }}" == *"release/net8"* ]] || [[ "${{ github.base_ref }}" == "release/net8" ]]; then
+          echo "version=8.0.x" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == *"release/net9"* ]] || [[ "${{ github.base_ref }}" == "release/net9" ]]; then
+          echo "version=9.0.x" >> $GITHUB_OUTPUT
+        else
+          echo "version=10.0.x" >> $GITHUB_OUTPUT
+        fi
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ steps.dotnet-version.outputs.version }}
 
     - name: Restore dependencies
       run: dotnet restore CompactifAI.sln
@@ -42,16 +50,27 @@ jobs:
   pack:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Detect .NET version from branch
+      id: dotnet-version
+      run: |
+        if [[ "${{ github.ref }}" == *"release/net8"* ]]; then
+          echo "version=8.0.x" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == *"release/net9"* ]]; then
+          echo "version=9.0.x" >> $GITHUB_OUTPUT
+        else
+          echo "version=10.0.x" >> $GITHUB_OUTPUT
+        fi
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ steps.dotnet-version.outputs.version }}
 
     - name: Restore dependencies
       run: dotnet restore CompactifAI.sln
@@ -65,6 +84,6 @@ jobs:
     - name: Upload NuGet package artifact
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-package
+        name: nuget-package-${{ github.ref_name }}
         path: ./nupkg/*.nupkg
         retention-days: 30

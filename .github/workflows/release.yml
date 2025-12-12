@@ -4,9 +4,6 @@ on:
   release:
     types: [ published ]
 
-env:
-  DOTNET_VERSION: '8.0.x'
-
 permissions:
   contents: write
 
@@ -18,14 +15,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Extract version and detect .NET version from tag
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        MAJOR=$(echo $VERSION | cut -d. -f1)
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "DOTNET_VERSION=${MAJOR}.0.x" >> $GITHUB_OUTPUT
+        echo "Detected version: $VERSION, .NET version: ${MAJOR}.0.x"
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-
-    - name: Extract version from tag
-      id: version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        dotnet-version: ${{ steps.version.outputs.DOTNET_VERSION }}
 
     - name: Restore dependencies
       run: dotnet restore CompactifAI.sln
