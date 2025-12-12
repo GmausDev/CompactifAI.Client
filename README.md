@@ -1,11 +1,28 @@
 # CompactifAI.Client
 
-A .NET 8 client library for the [CompactifAI API](https://docs.compactif.ai). Easily integrate AI chat completions, text completions, and audio transcription into your .NET applications.
+A .NET client library for the [CompactifAI API](https://docs.compactif.ai). Easily integrate AI chat completions, text completions, and audio transcription into your .NET applications.
+
+## .NET Version Support
+
+| Your .NET Version | Package Version | Install Command |
+|-------------------|-----------------|-----------------|
+| .NET 10.0 (LTS) | 10.x.x | `dotnet add package CompactifAI.Client --version 10.*` |
+| .NET 9.0 | 9.x.x | `dotnet add package CompactifAI.Client --version 9.*` |
+| .NET 8.0 (LTS) | 8.x.x | `dotnet add package CompactifAI.Client --version 8.*` |
+
+See [VERSIONING.md](VERSIONING.md) for the complete versioning strategy.
 
 ## Installation
 
 ```bash
-dotnet add package CompactifAI.Client
+# For .NET 10 (latest)
+dotnet add package CompactifAI.Client --version 10.*
+
+# For .NET 9
+dotnet add package CompactifAI.Client --version 9.*
+
+# For .NET 8
+dotnet add package CompactifAI.Client --version 8.*
 ```
 
 ## Quick Start
